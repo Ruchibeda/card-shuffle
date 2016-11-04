@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <style>
+            body{margin:30px;line-height:1.8em;color:#333}
+            #content{text-align:center}
+            #cardPile{padding:60px;border:2px solid #333;border-radius:10px}
+            #cardPile .card{/*margin: 0 0 0 -40px;*/float:left;width:58px;height:78px;padding:40px 10px 0;border:2px solid #333;border-radius:10px;background:#666;color:#fff}
+            #cardPile .card .card_text{margin-left:-45px;font-size:25px}
+        </style>
+        <script type="text/javascript">
+            var html = '';
+            var startPosition = 0;
+            var alphaArr = alphaRange('A', 'Z').concat(alphaRange('a', 'z'));
+            $(document).ready(function() {
+                for(var a in alphaArr) {
+                    var i = parseInt(a) + 1;
+                    html += '<div id="card_' + i + '" class="card ui-draggable" style="position: relative;" data-card-num="' + alphaArr[a] + '" data-card-pos="' + i + '" data-card-fixed-pos="' + i + '"><span class="card_text">' + alphaArr[a] + '</span></div>';
+                }
+                $('#cardPile').html(html);
+                
+                $('#cardPile').sortable({
+                    update: function( event, ui ) {
+                        refreshList(startPosition, ui.item.index() + 1, ui);
+                    },
+                    start: function(event, ui) { 
+                        startPosition =  ui.item.index() + 1;
+                    }
+                });
+                $('#cardPile').append('<div style="clear:both;"></div>');//auto-adjust height for outer div
+            });
+            
+            //method to refresh the list table
+            function refreshList(start, end, ui) {
+                ui.item.attr('data-card-pos', end);
+                if(start < end) {
+                    for(var i = start; i <= end - 1; i++) {
+                        var new_pos = parseInt($('.card:nth-child(' + i + ')').attr('data-card-pos')) - 1;
+                        $('.card:nth-child(' + i + ')').attr('data-card-pos', new_pos);
+                    }
+                } else {
+                    for(var i = end + 1; i <= start; i++) {
+                        var new_pos = parseInt($('.card:nth-child(' + i + ')').attr('data-card-pos')) + 1;
+                        $('.card:nth-child(' + i + ')').attr('data-card-pos', new_pos);
+                    }
+                }
+                
+                var html_title = '<tr><th>Number</th><th>New Position</th></tr>';
+                var html = '';
+                for(var i = 1; i <= 52; i++) {
+                    if($('#card_' + i).attr('data-card-fixed-pos') != $('#card_' + i).attr('data-card-pos')) {
+                        html += '<tr><td>' + $('#card_' + i).attr('data-card-num') + '</td><td>' + $('#card_' + i).attr('data-card-pos') + '</td></tr>';
+                    }
+                }
+                if(html != '') {
+                    $('#results').html(html_title + html);
+                    $('#results').show();
+                } else {
+                    $('#results').hide();
+                }
+            }
+            
+            //return alpha arrays for given range
+            function alphaRange(start, end) {
+                start = start.charCodeAt(0);
+                end = end.charCodeAt(0);
+                
+                var arr = [];
+                for(var i = start; i <= end; i++) {
+                    arr.push(String.fromCharCode(i));
+                }
+                return arr;
+            }
+        </script>
+    </head>
+    <body>
+        <div id="content">
+            <div id="cardPile">
+            </div>
+            <table style="display: none" id="results" border="1">
+            </table>
+        </div>
+    </body>
+</html>
